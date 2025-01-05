@@ -15,7 +15,7 @@ export default async function scrapAnnotations(pinId: string): Promise<ScrapedRe
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 10 second timeout
 
     const response = await limiter.schedule(() => fetch(URL, {
       method: "GET",

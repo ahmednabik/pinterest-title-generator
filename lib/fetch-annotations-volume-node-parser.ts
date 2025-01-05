@@ -36,7 +36,7 @@ export default async function fetchSearchVolume(url: string): Promise<number | n
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     
     // Stream the response instead of loading entire body
     const response = await limiter.schedule (() => fetch(url, {
