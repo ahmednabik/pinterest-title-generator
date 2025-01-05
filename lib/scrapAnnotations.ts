@@ -20,7 +20,7 @@ export default async function scrapAnnotations(pinId: string): Promise<ScrapedRe
     const response = await limiter.schedule(() => fetch(URL, {
       method: "GET",
       headers: userAgent.getHeaders(),
-      signal: controller.signal
+      // signal: controller.signal
     }));
 
     clearTimeout(timeoutId);

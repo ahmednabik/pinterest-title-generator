@@ -40,7 +40,7 @@ export default async function fetchSearchVolume(url: string): Promise<number | n
     
     // Stream the response instead of loading entire body
     const response = await limiter.schedule (() => fetch(url, {
-      signal: controller.signal,
+      // signal: controller.signal,
       headers: userAgent.getHeaders(),
     }));
     
