@@ -10,9 +10,11 @@ const Pinterest = require('pinterest.js')
 
 const MAX_PINS = 1
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const keyword = searchParams.get('keyword');
+export async function POST(request: Request) {
+  const startTime = performance.now();
+  // const { searchParams } = new URL(request.url);
+  // const keyword = searchParams.get('keyword');
+  const { keyword } = await request.json()
   const processKeywords = createKeywordProcessor({
     wordOverlap: 0,
     sequence: 0,
@@ -37,6 +39,9 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error processing keyword:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    const endTime = performance.now();
+    console.log(`OVERALL ROUTE EXECUTION TIME: ${endTime - startTime} ms`);
   }
 }
 
