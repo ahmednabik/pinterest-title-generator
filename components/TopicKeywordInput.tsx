@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "./ui/textarea";
 
 // Example of TopicKeywordInput component props
 interface TopicKeywordInputProps {
@@ -15,7 +16,8 @@ export default function TopicKeywordInput({
   setOptions,
 }: TopicKeywordInputProps) {
   const [topic, setTopic] = useState("");
-  const [keyword, setKeyword] = useState("");
+  const [primaryKeyword, setPrimaryKeyword] = useState("");
+  const [secondaryKeywords, setSecondaryKeywords] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +29,7 @@ export default function TopicKeywordInput({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ topic, keyword }),
+        body: JSON.stringify({ topic, primaryKeyword, secondaryKeywords }),
       });
 
       if (!response.ok) {
@@ -54,9 +56,20 @@ export default function TopicKeywordInput({
         required
       />
       <Input
-        placeholder="Enter target keyword"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
+        placeholder="Enter primary keyword"
+        value={primaryKeyword}
+        onChange={(e) => setPrimaryKeyword(e.target.value)}
+        required
+      />
+      <Textarea
+        placeholder="Enter secondary keywords (newline separated)"
+        value={secondaryKeywords.join("\n")}
+        className="min-h-[4rem]"
+        onChange={(e) =>
+          setSecondaryKeywords(
+            e.target.value.split("\n").map((kw) => kw.trim())
+          )
+        }
         required
       />
       <Button type="submit" className="w-full" disabled={isLoading}>

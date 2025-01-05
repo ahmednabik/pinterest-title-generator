@@ -15,17 +15,17 @@ const descriptionSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const { topic, keyword } = await req.json();
+    const { topic, primaryKeyword, secondaryKeywords } = await req.json();
 
-    if (!topic || !keyword) {
-      return NextResponse.json({ error: 'Missing topic or keyword' }, { status: 400 });
+    if (!topic || !primaryKeyword || !secondaryKeywords) {
+      return NextResponse.json({ error: 'Missing topic, primary keyword, or secondary keywords' }, { status: 400 });
     }
 
     const titleCompletion = await openai.beta.chat.completions.parse({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: JSON.stringify(prompts.titlePrompt) },
-        { role: "user", content: `Generate 3 Pinterest pin titles for the topic "${topic}" using the keyword "${keyword}".` }
+        { role: "user", content: `Generate 3 Pinterest pin titles for the topic "${topic}" using the primary keyword "${primaryKeyword}".` }
       ],
       n: 1,
       temperature: 0.7,
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: JSON.stringify(prompts.descriptionPrompt) },
-          { role: "user", content: `Generate a Pinterest pin description for the title "${title}" using the keyword "${keyword}".` }
+          { role: "user", content: `Generate a Pinterest pin description for the title "${title}" using the primary keyword "${primaryKeyword}" and the secondary keywords "${secondaryKeywords.join(", ")}".` }
         ],
         n: 1,
         temperature: 0.7,
