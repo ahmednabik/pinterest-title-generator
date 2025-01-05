@@ -2,6 +2,7 @@
 import { parse } from 'node-html-parser';
 import { LRUCache } from 'lru-cache';
 import { UserAgentGenerator } from './user-agent-generator';
+import { limiter } from './limiter';
 
 // Initialize LRU cache
 const cache = new LRUCache({
@@ -38,10 +39,10 @@ export default async function fetchSearchVolume(url: string): Promise<number | n
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
     // Stream the response instead of loading entire body
-    const response = await fetch(url, {
+    const response = await limiter.schedule (() => fetch(url, {
       signal: controller.signal,
       headers: userAgent.getHeaders(),
-    });
+    }));
     
     clearTimeout(timeoutId);
 

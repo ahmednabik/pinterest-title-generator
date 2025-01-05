@@ -8,7 +8,7 @@ import { createKeywordProcessor, processKeywordSuggestions } from '@/lib/keyword
 
 const Pinterest = require('pinterest.js')
 
-const MAX_PINS = 2
+const MAX_PINS = 1
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

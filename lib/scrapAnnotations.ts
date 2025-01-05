@@ -1,5 +1,7 @@
 import { Annotations } from "@/types/pindata";
 type ScrapedResult = Annotations | { error: true; message: string };
+import { UserAgentGenerator } from './user-agent-generator';
+import { limiter } from "./limiter";
 
 export default async function scrapAnnotations(pinId: string): Promise<ScrapedResult> {
   const PIN_ID_REGEX = /^[0-9]+$/;
@@ -8,20 +10,18 @@ export default async function scrapAnnotations(pinId: string): Promise<ScrapedRe
   }
 
   const URL = constructPinterestUrl(pinId);
+  const userAgent = new UserAgentGenerator();
+ 
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const response = await fetch(URL, {
+    const response = await limiter.schedule(() => fetch(URL, {
       method: "GET",
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
+      headers: userAgent.getHeaders(),
       signal: controller.signal
-    });
+    }));
 
     clearTimeout(timeoutId);
 
