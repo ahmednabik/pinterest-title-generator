@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Annotations } from '@/types/pindata';
-import Pinterest from 'pinterest.js';
+// import Pinterest from 'pinterest.js';
 import scrapAnnotations from '@/lib/scrapAnnotations';
 // import fetchAnnotationVolume from '@/lib/fetch-annotations-volume-cheerio';
 import fetchAnnotationVolume from '@/lib/fetch-annotations-volume-node-parser';
 import { createKeywordProcessor, processKeywordSuggestions } from '@/lib/keyword-relevancy-processor';
+
+const Pinterest = require('pinterest.js')
 
 const MAX_PINS = 2
 
@@ -67,7 +69,7 @@ async function fetchAnnotationsWithVolumes(keyword: string): Promise<any[]> {
 
 async function fetchTopPinsIds(keyword: string): Promise<string[]> {
   const topPins = await Pinterest.searchPins(keyword, { limit: 40 });
-  return topPins.response?.map((pin) => pin.id).filter((id): id is string => id !== undefined) || [];
+  return topPins.response?.map((pin: any) => pin.id).filter((id: any): id is string => id !== undefined) || [];
 }
 
 async function fetchScrappedAnnotations(topPinsIds: string[]): Promise<{ annotations: Annotations[], errors: { error: true; message: string }[] }> {
