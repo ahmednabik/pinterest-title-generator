@@ -1,39 +1,116 @@
 import OpenAI from "openai";
 import prompts from "./prompts.json";
+import { z } from "zod";
+
+// Input validation schema
+const inputSchema = z.object({
+  topic: z.string().min(1).max(200).trim(),
+  keywords: z.array(z.string().min(1).max(50).trim()),
+  maxLength: z.number().min(1).max(500),
+  temperature: z.number().min(0).max(1),
+});
+
+// Configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getTopicIntroduction(topic: string, keywords: string[]) {
-  try {
-    const prompt = `Write a short engaging introduction for topic: ${topic} and consider including the keywords: ${keywords.join(
-      ", "
-    )} where relevant.`;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "developer",
-          content: [
+export async function generateTopicIntroduction(
+  topic: string,
+  keywords: string[],
+  maxLength: number,
+  temperature: number
+) {
+  // Validate inputs
+  const validated = inputSchema.parse({
+    topic,
+    keywords,
+    maxLength,
+    temperature,
+  });
+
+  try {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          await delay(RETRY_DELAY * Math.pow(2, attempt));
+          console.log(
+            `Retry attempt ${attempt + 1} for topic: ${validated.topic}`
+          );
+        }
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
             {
-              type: "text",
-              text: prompts.topicIntroductionPrompt.join("\n"),
+              role: "system",
+              content: prompts.topicIntroductionPrompt.join("\n"),
+            },
+            {
+              role: "user",
+              content: `Write a short engaging introduction for topic: ${
+                validated.topic
+              } and consider including the keywords: ${validated.keywords.join(
+                ", "
+              )} where relevant.`,
             },
           ],
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 500,
-    });
+          temperature: validated.temperature,
+          max_tokens: validated.maxLength,
+          presence_penalty: 0.2,
+          frequency_penalty: 0.3,
+        });
 
-    return response.choices[0].message.content;
+        const content = response.choices[0].message.content;
+
+        if (!content) {
+          throw new Error("Empty response from OpenAI");
+        }
+
+        return { content, error: null };
+      } catch (error) {
+        lastError = error as Error;
+
+        if (error instanceof OpenAI.APIError) {
+          if (["rate_limit_exceeded", "timeout"].includes(error.code || "")) {
+            continue;
+          }
+          return {
+            content: null,
+            error: `OpenAI API error: ${error.message}`,
+          };
+        }
+
+        throw error;
+      }
+    }
+
+    return {
+      content: null,
+      error: `Failed after ${MAX_RETRIES} attempts. Last error: ${lastError?.message}`,
+    };
   } catch (error) {
-    console.error("Error generating topic introduction:", error);
-    throw new Error("Failed to generate topic introduction");
+    console.error("Error in generateTopicIntroduction:", error);
+
+    if (error instanceof z.ZodError) {
+      return {
+        content: null,
+        error: `Invalid input: ${error.errors
+          .map((e) => e.message)
+          .join(", ")}`,
+      };
+    }
+
+    return {
+      content: null,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
   }
 }

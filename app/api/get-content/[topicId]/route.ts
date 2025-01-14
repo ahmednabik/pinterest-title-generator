@@ -10,9 +10,9 @@ export async function GET(
   const { topicId } = await context.params;
 
   try {
-    if (!topicId) {
+    if (!topicId || !topicId.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
-        { error: "Topic ID is required" },
+        { error: "Invalid Topic ID format" },
         { status: 400 }
       );
     }
@@ -21,23 +21,40 @@ export async function GET(
 
     const topic = await TopicSchema.findById(topicId);
 
+    if (!topic) {
+      return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+    }
+
     const subtopics = await SubTopicSchema.find({ topicId })
+      .select("title imageUrl description")
       .sort({ order: 1 })
       .lean();
+
+    if (!topic.title || !topic.introduction) {
+      return NextResponse.json(
+        { error: "Incomplete topic data" },
+        { status: 500 }
+      );
+    }
 
     const content = {
       title: topic.title,
       introduction: topic.introduction,
       subtopics: subtopics.map((subtopic) => ({
+        subtopicId: subtopic._id,
         subheading: subtopic.title,
-        imageUrl: subtopic.imageUrl,
+        imageUrl: subtopic.imageUrl || null,
         description: subtopic.description,
       })),
+      createdAt: topic.createdAt,
     };
 
     return NextResponse.json(content);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching content:", error);
+    if (error.name === "CastError") {
+      return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+    }
     return NextResponse.json(
       { error: "Failed to fetch content" },
       { status: 500 }

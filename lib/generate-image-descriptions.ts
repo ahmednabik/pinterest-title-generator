@@ -2,12 +2,11 @@ import OpenAI from "openai";
 const openai = new OpenAI();
 import prompts from "./prompts.json";
 
-export async function writeSubTopicDescription(
+export async function generateSubTopicDescription(
   imageUrl: string,
   topic: string,
   keywords: string[]
 ) {
-  console.log("PROMPT: ", prompts.imageDescriptionPrompt.join("\n"));
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 1,

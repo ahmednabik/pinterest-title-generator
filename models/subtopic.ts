@@ -10,14 +10,14 @@ const SubTopicSchema = new Schema({
   imageUrl: String,
   description: String,
   keywords: [String],
+  order: Number, // To maintain subtopic order if needed
   metadata: {
     prompt: String,
     model: String,
-  },
-  order: Number, // To maintain subtopic order if needed
-  createdAt: {
-    type: Date,
-    default: Date.now,
+    processedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
 });
 

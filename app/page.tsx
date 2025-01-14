@@ -10,7 +10,7 @@ export default function PinterestPinGenerator() {
     <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
         <h1 className="text-3xl font-bold text-center mb-8 text-purple-800">
-          Title & Descriptions Generator
+          Title & Descriptions
         </h1>
         <TopicKeywordInput
           setOptions={

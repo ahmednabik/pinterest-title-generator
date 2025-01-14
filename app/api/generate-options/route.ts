@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         return { title, description };
       })
     );
-    console.log(options);
+
     return NextResponse.json({ options });
   } catch (error) {
     console.error("Error generating options:", error);

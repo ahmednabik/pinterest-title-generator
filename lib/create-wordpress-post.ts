@@ -206,10 +206,7 @@ async function addSubtopicToPost({
   }
 
   const postData = await currentPost.json();
-  console.log("POST DATA: ", postData);
   const currentContent = postData.content.rendered;
-
-  console.log("CURRENT CONTENT: ", currentContent);
 
   // Append new subtopic
   const newContent = {
