@@ -7,9 +7,10 @@ import SubTopicSchema from "@/models/subtopic";
 import TopicSchema from "@/models/topics";
 import { generateTopicIntroduction } from "@/lib/generate-topic-introduction";
 import { z } from "zod";
+import { llmConfig } from "@/config/llm-config";
 
 //Max number of subtopics to generate
-const MAX_SUBTOPICS = 25;
+// const MAX_SUBTOPICS = llmConfig.subtopicIdeasConfig.max_ideas;
 
 // Input validation schema
 const requestSchema = z.object({
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     // Parallel processing for initial data
     const [topicIntroductionResponse, subtopicsResponse] = await Promise.all([
       generateTopicIntroduction(topic, keywords, 200, 0.6), // 200 is the max length of the introduction and 0.6 is the temperature
-      getSubTopics(topic, MAX_SUBTOPICS), // second argument is the number of subtopics to generate
+      getSubTopics(topic, llmConfig.subtopicIdeasConfig.max_ideas), // second argument is the number of subtopics to generate
     ]);
 
     const subtopics = subtopicsResponse.subtopics;
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
               order: i + batchIndex,
               metadata: {
                 prompt: JSON.stringify(subtopic),
-                model: "flux.1 dev schnell",
+                model: llmConfig.replicateImageConfig.model,
                 processedAt: new Date(),
               },
             });

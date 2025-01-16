@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import prompts from "./prompts.json";
 import { z } from "zod";
+import { llmConfig } from "../config/llm-config";
 
 // Input validation schema
 const inputSchema = z.object({
@@ -47,7 +48,7 @@ export async function generateTopicIntroduction(
         }
 
         const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: llmConfig.topicIntroductionConfig.model,
           messages: [
             {
               role: "system",
@@ -62,10 +63,11 @@ export async function generateTopicIntroduction(
               )} where relevant.`,
             },
           ],
-          temperature: validated.temperature,
-          max_tokens: validated.maxLength,
-          presence_penalty: 0.2,
-          frequency_penalty: 0.3,
+          temperature: llmConfig.topicIntroductionConfig.temperature,
+          max_tokens: llmConfig.topicIntroductionConfig.maxTokens,
+          presence_penalty: llmConfig.topicIntroductionConfig.presence_penalty,
+          frequency_penalty:
+            llmConfig.topicIntroductionConfig.frequency_penalty,
         });
 
         const content = response.choices[0].message.content;

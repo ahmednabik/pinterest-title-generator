@@ -3,6 +3,7 @@ import openai from "../../../lib/openai";
 import prompts from "../../../lib/prompts.json";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
+import { llmConfig } from "../../../config/llm-config";
 
 const titleSchema = z.object({
   title_1: z.string(),
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const titleCompletion = await openai.beta.chat.completions.parse({
-      model: "gpt-4o-mini",
+      model: llmConfig.titleAndDescriptionConfig.model,
       messages: [
         {
           role: "system",
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       n: 1,
-      temperature: 0.7,
+      temperature: llmConfig.titleAndDescriptionConfig.temperature,
       response_format: zodResponseFormat(titleSchema, "titles"),
     });
     const titles = titleCompletion.choices[0].message.parsed || {};
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     const options = await Promise.all(
       Object.values(titles).map(async (title) => {
         const descriptionCompletion = await openai.beta.chat.completions.parse({
-          model: "gpt-4o-mini",
+          model: llmConfig.titleAndDescriptionConfig.model,
           messages: [
             {
               role: "system",
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
             },
           ],
           n: 1,
-          temperature: 0.7,
+          temperature: llmConfig.titleAndDescriptionConfig.temperature,
           response_format: zodResponseFormat(descriptionSchema, "description"),
         });
 

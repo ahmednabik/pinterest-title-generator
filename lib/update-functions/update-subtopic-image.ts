@@ -6,11 +6,11 @@ import Replicate from "replicate";
 import { revalidatePath } from "next/cache";
 import { uploadImageToCloudinary } from "@/lib/upload-cloudinary";
 import { updateImageDescription } from "./update-image-description";
+import { llmConfig } from "@/config/llm-config";
 
 const replicate = new Replicate({
   useFileOutput: false,
 });
-const model = "black-forest-labs/flux-schnell";
 // Utility functions
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -73,13 +73,13 @@ async function validateAndFetchSubtopic(subtopicId: string) {
 async function generateImage(prompt: string) {
   const input: ReplicateInput = {
     prompt,
-    aspect_ratio: "2:3",
-    num_outputs: 1,
-    num_inference_steps: 4,
-    guidance_scale: 2,
-    negative_prompt: "low quality, watermark, text, logo, cropped, incomplete",
-    output_quality: 100,
-    sampler: "euler_a",
+    aspect_ratio: llmConfig.replicateImageConfig.aspect_ratio,
+    num_outputs: llmConfig.replicateImageConfig.num_outputs,
+    num_inference_steps: llmConfig.replicateImageConfig.num_inference_steps,
+    guidance_scale: llmConfig.replicateImageConfig.guidance_scale,
+    negative_prompt: llmConfig.replicateImageConfig.negative_prompt,
+    output_quality: llmConfig.replicateImageConfig.output_quality,
+    sampler: llmConfig.replicateImageConfig.sampler,
   };
 
   const output = await retryReplicate(input);
@@ -132,11 +132,18 @@ async function retryReplicate(
       const timeout = setTimeout(() => controller.abort(), 40000);
 
       try {
-        const output = (await replicate.run(model, {
-          input,
-          signal: controller.signal,
-          wait: { mode: "block", interval: 1000, timeout: 30 },
-        })) as string[];
+        const output = (await replicate.run(
+          llmConfig.replicateImageConfig.model as `${string}/${string}`,
+          {
+            input,
+            signal: controller.signal,
+            wait: {
+              mode: "block",
+              interval: 1000,
+              timeout: llmConfig.replicateImageConfig.timeout,
+            },
+          }
+        )) as string[];
 
         return output;
       } finally {

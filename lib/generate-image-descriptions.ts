@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 const openai = new OpenAI();
 import prompts from "./prompts.json";
+import { llmConfig } from "../config/llm-config";
 
 export async function generateSubTopicDescription(
   imageUrl: string,
@@ -8,9 +9,10 @@ export async function generateSubTopicDescription(
   keywords: string[]
 ) {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 1,
-    top_p: 1,
+    model: llmConfig.imageDescriptionConfig.model,
+    temperature: llmConfig.imageDescriptionConfig.temperature,
+    top_p: llmConfig.imageDescriptionConfig.top_p,
+    max_tokens: llmConfig.imageDescriptionConfig.max_tokens,
     messages: [
       {
         role: "developer",
