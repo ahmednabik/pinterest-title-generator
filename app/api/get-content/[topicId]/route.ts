@@ -3,14 +3,11 @@ import dbConnect from "@/lib/mongodb";
 import SubTopicSchema from "@/models/subtopic";
 import TopicSchema from "@/models/topics";
 
-type Props = {
-  params: {
-    topicId: string;
-  };
-};
-
-export async function GET(_request: NextRequest, props: Props) {
-  const { topicId } = await props.params;
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ topicId: string }> }
+) {
+  const { topicId } = await params;
 
   try {
     if (!topicId || !topicId.match(/^[0-9a-fA-F]{24}$/)) {

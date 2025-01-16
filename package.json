@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "yolo": "git add . && git commit -m 'fixed something something' && git push origin main"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.3",
