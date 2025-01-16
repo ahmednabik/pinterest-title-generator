@@ -1,13 +1,16 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import SubTopicSchema from "@/models/subtopic";
 import TopicSchema from "@/models/topics";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { topicId: string } }
-) {
-  const { topicId } = params;
+type Props = {
+  params: {
+    topicId: string;
+  };
+};
+
+export async function GET(_request: NextRequest, props: Props) {
+  const { topicId } = await props.params;
 
   try {
     if (!topicId || !topicId.match(/^[0-9a-fA-F]{24}$/)) {
